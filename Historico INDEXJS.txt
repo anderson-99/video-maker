@@ -1,0 +1,149 @@
+const readline = require('readline-sync')
+const robots = {
+    userInput: require('./robots/user-input.js')
+    text: require('./robots/text.js')
+}
+
+function start() {
+    const content = {}
+
+    content.searchTerm = askAndReturnSearchTerm()
+    content.prefix = askAndReturnPrefix()
+
+    robots.userInput(content)
+    robots.text(content)
+
+    function askAndReturnSearchTerm() {
+        return readline.question('Type a Wikipedia search term: ')
+    }
+
+    function askAndReturnPrefix(){
+        const prefixes = ['Who is', 'What is', 'The history of']
+        const selectedPrefixIndex = readline.keyInSelect(prefixes, 'Choose one option: ')
+        const selectedPrefixText = prefixes[selectedPrefixIndex]
+
+        console.log(selectedPrefixText)
+
+        return selectedPrefixText
+    }
+
+    console.log(content)
+
+
+}
+    
+start()
+
+Visão 2
+
+const readline = require('readline-sync')
+const robots = {
+    userInput: require('./robots/user-input.js')
+    text: require('./robots/text.js')
+}
+
+function start() {
+    const content = {}
+
+    robots.userInput(content)
+    robots.text(content)
+
+    console.log(content)
+
+
+}
+    
+start()
+
+
+Visão 3 - antes de colocar tudo em uma função só
+
+const algorithmia = require('algorithmia')
+const algorithmiaApiKey = require('../credentials/algorithmia.json').apiKey
+
+async function robot(content){
+    await fetchContentFromWikipedia(content)    
+    sanitizeContent(content)
+    //breakContentIntoSentences(content)
+
+    async function fetchContentFromWikipedia(content){
+        
+        const algorithmiaAuthenticated = algorithmia(algorithmiaApiKey)
+        const wikipediaAlgorithm = algorithmiaAuthenticated.algo('web/WikipediaParser/0.1.2')
+        const wikipediaResponde = await wikipediaAlgorithm.pipe(content.searchTerm)
+        const wikipediaContent = wikipediaResponde.get()
+        
+        content.sourceContentOriginal = wikipediaContent.content     
+    }
+    function sanitizeContent(content) {
+        const withoutBlankLines = removeBlankLines(content.sourceContentOriginal)
+        const withoutMarkdown = removeMarkdown(withoutBlankLines)
+        console.log(withoutMarkdown)
+
+        function removeBlankLines(text) {
+            const allLines = text.split('\n')
+            const withoutBlankLines = allLines.filter((line) => {
+                if (line.trim().length === 0) {
+                    return false
+                }
+                return true
+            })
+            return withoutBlankLines
+            //console.log (allLines)
+        }
+    }
+    function removeMarkdown (lines) {
+        const withoutMarkdown = lines.filter((line) => {
+           if (line.trim().startsWith('=')) {
+             return false  
+           }
+           return true
+        })
+        return withoutMarkdown
+    }
+}
+module.exports = robot
+
+
+Versão unidando as FUNCOES - line em branco e espaços
+
+const algorithmia = require('algorithmia')
+const algorithmiaApiKey = require('../credentials/algorithmia.json').apiKey
+
+async function robot(content){
+    await fetchContentFromWikipedia(content)    
+    sanitizeContent(content)
+    //breakContentIntoSentences(content)
+
+    async function fetchContentFromWikipedia(content){
+        
+        const algorithmiaAuthenticated = algorithmia(algorithmiaApiKey)
+        const wikipediaAlgorithm = algorithmiaAuthenticated.algo('web/WikipediaParser/0.1.2')
+        const wikipediaResponde = await wikipediaAlgorithm.pipe(content.searchTerm)
+        const wikipediaContent = wikipediaResponde.get()
+        
+        content.sourceContentOriginal = wikipediaContent.content     
+    }
+    function sanitizeContent(content) {
+        const withoutBlankLinesAndMarkdown = removeBlankLinesAndMarkdown(content.sourceContentOriginal)
+        console.log(withoutBlankLinesAndMarkdown)
+
+        function removeBlankLinesAndMarkdown(text) {
+            const allLines = text.split('\n')
+
+            const withoutBlankLines = allLines.filter((line) => {
+                if (line.trim().length === 0 ||line.trim().startsWith('=')) {
+                    return false
+                }
+                return true
+            })
+            return withoutBlankLinesAndMarkdown.join(' ')
+            //console.log (allLines)
+        }
+    }
+}
+module.exports = robot
+
+
+
+
